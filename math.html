@@ -1,0 +1,2269 @@
+<html lang="en"><head>
+<script>
+(function() {
+  var sid = new URLSearchParams(window.location.search).get('sid') || '';
+  if (!sid) return;
+  function wipe() {
+    document.head.innerHTML = '<style>*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;background:#000;}#kick-msg{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999999;font-family:monospace;}</style>';
+    document.body.innerHTML = '<div id="kick-msg"><p style="color:#ff416c;font-size:1.2rem;">You have been removed.</p><a href="/" style="color:#4facfe;font-size:.9rem;">Return home</a></div>';
+    document.querySelectorAll('iframe').forEach(function(f){ f.src='about:blank'; });
+  }
+  function check() {
+    fetch('/kick-check', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ sessionId: sid })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.kicked) { wipe(); return; }
+      setTimeout(check, 2000);
+    })
+    .catch(function(){ setTimeout(check, 3000); });
+  }
+  setTimeout(check, 1000);
+})();
+</script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="icon" type="image/x-icon" href="https://ik.imagekit.io/rckdebdbt/favicon.ico">
+<link rel="shortcut icon" href="https://ik.imagekit.io/rckdebdbt/favicon.ico">
+<title>4Math Tutoring Center</title>
+<meta name="description" content="4Math Tutoring Center - Interactive learning tools and resources for students.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  :root {
+    --theme-hue: 186;
+    --bg-color: #000000;
+    --card-bg: hsl(var(--theme-hue), 16%, 13%);
+    --text-main: #ffffff;
+    --text-dim: #94a3b8;
+    --accent-glow: linear-gradient(135deg, hsl(calc(var(--theme-hue) - 145), 100%, 61%), hsl(var(--theme-hue), 97%, 66%));
+    --border-dim: rgba(148, 163, 184, 0.16);
+    --border-hover: rgba(148, 163, 184, 0.5);
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Fredoka', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  header.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    box-sizing: border-box;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.35) !important;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 1px 0 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  header.site-header h1 {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    line-height: 1;
+  }
+
+  header.site-header .card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 10px 18px;
+    margin: 0;
+    vertical-align: middle;
+  }
+
+  .item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 180px));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    justify-content: center;
+  }
+
+  .card {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 180px;
+    min-width: 0;
+    background: transparent;
+    border-radius: 14px;
+    padding: 0;
+    text-align: center;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+    text-decoration: none;
+    color: inherit;
+    will-change: transform;
+    contain: layout style;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .card:hover, .card:focus {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+  }
+
+  .card h3 { margin: 0; font-weight: 600; }
+  .card p { color: var(--text-dim); font-size: 0.9rem; }
+
+  .play-count-badge {
+    display: block;
+    font-size: 11px;
+    font-family: 'Fredoka', sans-serif;
+    color: #fff;
+    height: 16px;
+    line-height: 16px;
+    margin-top: 2px;
+    overflow: hidden;
+    pointer-events: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .play-count-badge.has-count {
+    color: #fff;
+  }
+  .play-count-badge.loading {
+    color: rgba(255,255,255,0.5);
+  }
+
+  @media (max-width: 600px) {
+    .item-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
+  }
+
+  img:not(.nav-icon-btn img):not(.fg-btn img):not(.site-logo):not(.card-img) { display: none !important; }
+
+  .card-img {
+    display: block !important;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 0;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .card-img-placeholder {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 180px;
+    border-radius: 0;
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  /* Title bar: hidden by default, slides up as overlay on hover */
+  .card-title-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 8px 8px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+    font-size: 0.88rem;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.25;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+  }
+  .card:hover .card-title-bar,
+  .card:focus .card-title-bar {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .card-title-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+  }
+  /* liquid-glass variant for title bar */
+  body.liquid-glass .card-title-bar {
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%) !important;
+  }
+  .nav-icon-btn img, .fg-btn img, .site-logo { display: block !important; }
+  .site-logo { height: 56px; width: auto; max-width: none; margin-right: 6px; object-fit: contain; }
+  .logo-hidden { display: none !important; }
+
+  .item-label {
+    display: block;
+    font-weight: 600;
+    color: white;
+  }
+
+  #fg-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    flex-direction: column;
+    background: #000;
+    display: flex;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+  }
+  #fg-viewer.open {
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  #fg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 56px;
+    background: #000;
+    flex-shrink: 0;
+    border-bottom: 1px solid #1a1a1a;
+    gap: 10px;
+  }
+  body.liquid-glass #fg-header {
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-bottom-color: rgba(255,255,255,0.07);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  #fg-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+  }
+
+  #fg-header-btns {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .fg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, background 0.2s;
+    flex-shrink: 0;
+    outline: none;
+    user-select: none;
+    padding: 0;
+  }
+  .fg-btn:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+  .fg-btn:focus, .fg-btn:active, .fg-btn:focus-visible {
+    outline: none; box-shadow: none;
+  }
+  .fg-btn img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .fg-btn-fav.active {
+    border-color: rgba(245,197,24,0.5);
+    background: rgba(245,197,24,0.08);
+  }
+  .fg-btn-fav.active img { filter: sepia(1) saturate(4) hue-rotate(5deg) brightness(1.1); }
+
+  #fg-view-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+  }
+  #fg-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  #fg-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: none;
+    opacity: 1;
+    overflow: hidden;
+    background: #000;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1s ease;
+  }
+  #fg-loading.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #fg-loading-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    filter: none;
+  }
+  .loading-label {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    padding: 5px 8px;
+    color: #fff;
+    background: rgba(0,0,0,.7);
+    font: 12px monospace;
+  }
+
+  #fg-console {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    height: 190px;
+    max-height: 35vh;
+    min-height: 120px;
+    flex-direction: column;
+    background: #101719;
+    color: #dbe5e7;
+    border-top: 1px solid #344448;
+    font: 12px/1.45 Consolas, Monaco, monospace;
+    transform: translateY(100%);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.28s;
+  }
+  #fg-console.open {
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s;
+  }
+  #fg-console-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #1c2526;
+    border-bottom: 1px solid #344448;
+    font: 600 13px 'Fredoka', sans-serif;
+  }
+  #fg-console-output { overflow: auto; padding: 9px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .fg-console-line { padding: 2px 0; color: #b8c8cc; }
+  .fg-console-line.warn { color: #f0c674; }
+  .fg-console-line.error { color: #ff8b8b; }
+
+  .card.fav-card {
+    border-color: rgba(245, 197, 24, 0.4);
+  }
+
+  .nav-icon-btn {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  button.nav-icon-btn {
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    appearance: none;
+  }
+  .nav-icon-btn:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+  .nav-icon-btn img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+  }
+
+  #settings-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+  }
+  #settings-panel.open {
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  #settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 56px;
+    background: #000;
+    border-bottom: 1px solid #1a1a1a;
+    flex-shrink: 0;
+    gap: 12px;
+  }
+  #settings-header-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+  }
+  #settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  .settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .settings-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-bottom: 6px;
+    border-bottom: 1px solid #1f292a;
+  }
+  .settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .settings-row-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .settings-row-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  #open-about-blank-btn {
+    display: block;
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  #open-about-blank-btn:hover { border-color: var(--border-hover); }
+  #open-about-blank-btn:focus, #open-about-blank-btn:active, #open-about-blank-btn:focus-visible { outline: none; box-shadow: none; }
+
+  #theme-hue-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 12px;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+    background: linear-gradient(to right,
+      hsl(0,80%,55%), hsl(30,80%,55%), hsl(60,80%,55%), hsl(90,80%,55%),
+      hsl(120,80%,55%), hsl(150,80%,55%), hsl(180,80%,55%), hsl(210,80%,55%),
+      hsl(240,80%,55%), hsl(270,80%,55%), hsl(300,80%,55%), hsl(330,80%,55%),
+      hsl(360,80%,55%));
+    border: 2px solid var(--border-dim);
+  }
+  #theme-hue-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #000;
+    box-shadow: 0 0 6px rgba(0,0,0,0.6);
+    cursor: pointer;
+  }
+  #theme-hue-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #000;
+    box-shadow: 0 0 6px rgba(0,0,0,0.6);
+    cursor: pointer;
+  }
+  #theme-hue-preview {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+  }
+  #theme-hue-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 2px solid var(--border-dim);
+    flex-shrink: 0;
+  }
+  #theme-hue-value {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  #panic-key-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #panic-key-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 15px;
+    color: #fff;
+    min-width: 48px;
+    text-align: center;
+  }
+  #panic-key-btn {
+    padding: 6px 16px;
+    border-radius: 10px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  #panic-key-btn:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: none; }
+  #panic-key-btn:focus, #panic-key-btn:active, #panic-key-btn:focus-visible { outline: none; box-shadow: none; }
+  #panic-key-btn.listening {
+    border-color: var(--border-dim);
+    color: #fff;
+    background: var(--card-bg);
+    box-shadow: none;
+    animation: none;
+  }
+  #panic-key-clear {
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: transparent;
+    border: 2px solid rgba(255,80,80,0.3);
+    color: #ff8b8b;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  #panic-key-clear:hover { border-color: rgba(255,80,80,0.7); }
+
+  #page-title-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #page-title-input:focus { border-color: var(--border-hover); }
+  #page-title-input::placeholder { color: var(--text-dim); }
+  #page-title-save {
+    align-self: flex-start;
+    padding: 8px 20px;
+    border-radius: 10px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  #page-title-save:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+  #page-title-feedback {
+    font-size: 12px;
+    color: #fff;
+    min-height: 16px;
+    transition: opacity 0.3s;
+  }
+
+  .vanta-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 8px 0;
+  }
+  #vanta-toggle, #logo-toggle {
+    width: 60px;
+    height: 32px;
+    border-radius: 99px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-dim);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.35s cubic-bezier(0.4,0,0.2,1),
+                border-color 0.35s cubic-bezier(0.4,0,0.2,1),
+                box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);
+    outline: none;
+  }
+  #vanta-toggle:focus-visible, #logo-toggle:focus-visible {
+    box-shadow: 0 0 0 3px hsl(var(--theme-hue), 70%, 50%, 0.4);
+  }
+  #vanta-toggle.on, #logo-toggle.on {
+    background: hsl(var(--theme-hue), 65%, 32%);
+    border-color: hsl(var(--theme-hue), 65%, 52%);
+    box-shadow: 0 0 14px hsl(var(--theme-hue), 80%, 45%, 0.45),
+                inset 0 0 8px hsl(var(--theme-hue), 80%, 55%, 0.15);
+  }
+  #vanta-thumb, #logo-thumb {
+    position: absolute;
+    top: 50%;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #64748b;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    transform: translateY(-50%);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1),
+                background 0.35s cubic-bezier(0.4,0,0.2,1),
+                box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  #vanta-toggle.on #vanta-thumb, #logo-toggle.on #logo-thumb {
+    transform: translateY(-50%) translateX(28px);
+    background: #fff;
+    box-shadow: 0 0 8px hsl(var(--theme-hue), 90%, 70%, 0.7),
+                0 1px 4px rgba(0,0,0,0.3);
+  }
+  #vanta-toggle::after, #logo-toggle::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 99px;
+    border: 2px solid hsl(var(--theme-hue), 70%, 55%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  #vanta-toggle.ping::after, #logo-toggle.ping::after {
+    animation: vanta-ping 0.5s cubic-bezier(0,0,0.2,1) forwards;
+  }
+  @keyframes vanta-ping {
+    0%   { opacity: 0.7; transform: scale(1); }
+    100% { opacity: 0;   transform: scale(1.25); }
+  }
+  #vanta-toggle-label, #logo-toggle-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+    transition: color 0.3s;
+    min-width: 24px;
+  }
+  #vanta-toggle.on ~ #vanta-toggle-label, #logo-toggle.on ~ #logo-toggle-label {
+    color: hsl(var(--theme-hue), 70%, 65%);
+  }
+
+  .vanta-sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .vanta-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .vanta-slider-row label {
+    font-size: 12px;
+    color: var(--text-dim);
+    width: 70px;
+    flex-shrink: 0;
+  }
+  .vanta-slider-row input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 6px;
+    border-radius: 4px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-dim);
+    outline: none;
+    cursor: pointer;
+  }
+  .vanta-slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: hsl(var(--theme-hue), 60%, 60%);
+    border: 2px solid #000;
+    cursor: pointer;
+  }
+  .vanta-slider-row input[type=range]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: hsl(var(--theme-hue), 60%, 60%);
+    border: 2px solid #000;
+    cursor: pointer;
+  }
+  .vanta-slider-row .vanta-val {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: monospace;
+    width: 32px;
+    text-align: right;
+  }
+
+  body.liquid-glass .card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  }
+  body.liquid-glass .card:hover {
+    box-shadow: 0 4px 18px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.16) !important;
+  }
+  body.liquid-glass .fg-btn,
+  body.liquid-glass .nav-icon-btn,
+  body.liquid-glass #open-about-blank-btn,
+  body.liquid-glass #page-title-save,
+  body.liquid-glass #panic-key-btn,
+  body.liquid-glass #panic-key-clear {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(12px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25),
+                inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    transition: transform 0.2s ease, border-color 0.2s ease,
+                box-shadow 0.2s ease, background 0.2s ease !important;
+  }
+  body.liquid-glass .fg-btn:hover,
+  body.liquid-glass .nav-icon-btn:hover,
+  body.liquid-glass #open-about-blank-btn:hover,
+  body.liquid-glass #page-title-save:hover,
+  body.liquid-glass #panic-key-btn:hover {
+    background: rgba(255, 255, 255, 0.11) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.18) !important;
+  }
+  body.liquid-glass .card.fav-card {
+    border-color: rgba(245, 197, 24, 0.35) !important;
+  }
+  body.liquid-glass .fg-btn-fav.active {
+    background: rgba(245, 197, 24, 0.1) !important;
+    border-color: rgba(245, 197, 24, 0.4) !important;
+  }
+  body.liquid-glass #panic-key-clear {
+    background: rgba(255, 80, 80, 0.06) !important;
+    border-color: rgba(255, 80, 80, 0.25) !important;
+  }
+  body.liquid-glass #panic-key-clear:hover {
+    background: rgba(255, 80, 80, 0.12) !important;
+    border-color: rgba(255, 80, 80, 0.5) !important;
+  }
+  body.liquid-glass .play-count-badge {
+    background: transparent !important;
+  }
+
+  
+  body.no-play-counts .play-count-badge { display: none !important; max-height: 0 !important; }
+  body.no-play-counts #sort-plays-toggle {
+    opacity: 0.35;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+  body.no-play-counts #sort-plays-label { opacity: 0.35; }
+</style>
+
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    confirm("#nofilternovember is HERE :3");
+  });
+</script>  
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    confirm("sub 2 4games on YOUTUBE AND TIKTOK");
+  });
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    confirm("Welcome to 4games v2 public version join discord.4games.net for more bypasses");
+  });
+</script>
+</head>
+<body>
+
+<div id="site-preloader" style="position:fixed;inset:0;z-index:99999;background:#000;">
+  <div id="preload-status" style="color:#fff;padding:10px;font-family:monospace;font-size:13px;"></div>
+</div>
+
+<script>
+  window.CONTENT_API = 'https://cdn.jsdelivr.net/gh/electricxmaxx/mathassignments@main';
+</script>
+
+<script>
+window.__cachedItems = null;
+window.playCountsFullyLoaded = false;
+window.playCountingEnabled = true;
+</script>
+
+<script>
+(function() {
+  var el = document.getElementById('preload-status');
+  var urls = ['https://ik.imagekit.io/rckdebdbt/GAMESsdaads%20(3).png','https://ik.imagekit.io/rckdebdbt/Copy%20of%20PARTS%20DISTRIBUTION%20CENTER%20(2).png','https://ik.imagekit.io/rckdebdbt/links.png','https://ik.imagekit.io/rckdebdbt/ai.png','https://ik.imagekit.io/rckdebdbt/chat.png','https://ik.imagekit.io/rckdebdbt/favorite.png','https://ik.imagekit.io/rckdebdbt/reload.png','https://ik.imagekit.io/rckdebdbt/newtab.png','https://ik.imagekit.io/rckdebdbt/newtab%20(1).png','https://ik.imagekit.io/rckdebdbt/newtab%20(2).png'];
+  var imgDone = 0;
+  var finished = false;
+  function log(t) { el.innerHTML += t + '<br>'; }
+  function tryDone() { if (imgDone >= urls.length && finished) setTimeout(function(){ document.getElementById('site-preloader').style.display = 'none'; }, 500); }
+  setTimeout(function() { document.getElementById('site-preloader').style.display = 'none'; }, 8000);
+  urls.forEach(function(u) {
+    var img = new Image();
+    img.onload = img.onerror = function() { log('loading image ' + (++imgDone) + '/' + urls.length); tryDone(); };
+    img.src = u;
+  });
+  fetchItems()
+    .then(function(d){
+      window.__cachedItems = d;
+      var cards = Array.isArray(d) ? d.length : '?';
+      log('loading cards ' + cards + '/' + cards);
+      finished = true;
+      tryDone();
+    }).catch(function(){ log('loading cards failed'); finished = true; tryDone(); });
+})();
+
+function fetchItems() {
+  var cdn = 'https://cdn.jsdelivr.net/gh/electricxmaxx/mathassignments@main/math.json';
+  return fetch(cdn)
+    .then(function(r) { if (!r.ok) throw new Error('CDN error ' + r.status); return r.json(); })
+    .catch(function(err) {
+      document.getElementById('preload-status').innerHTML += 'CDN unavailable: ' + err.message + '<br>';
+      return Promise.reject(err);
+    });
+}
+</script>
+
+<header class="site-header" style="color:white;padding:16px 20px;">
+  <div style="display:flex;align-items:center;gap:14px;max-width:1400px;margin:0 auto;padding:0 20px;">
+    <img src="https://ik.imagekit.io/rckdebdbt/GAMESsdaads%20(3).png" alt="" class="site-logo" id="logo-img">
+    <span id="logo-text" class="logo-hidden" style="color:#fff;font-size:1.4rem;font-weight:700;letter-spacing:0.03em;">4Math</span>
+
+    <a href="https://discord.4games.net/" class="nav-icon-btn" title="Discord Server">
+      <img src="https://ik.imagekit.io/rckdebdbt/Copy%20of%20PARTS%20DISTRIBUTION%20CENTER%20(2).png" alt="Discord">
+    </a>
+
+    <a href="https://discord.4games.net/" class="nav-icon-btn" title="More Links">
+      <img src="https://ik.imagekit.io/rckdebdbt/links.png" alt="Links">
+    </a>
+
+    <button class="nav-icon-btn" id="settings-open-btn" onclick="settingsOpen()" title="Settings">
+      <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(4).png" alt="Settings">
+    </button>
+
+    <a href="https://levitator-lagging-dynamic.ngrok-free.dev//ai.html" class="nav-icon-btn" title="AI">
+      <img src="https://ik.imagekit.io/rckdebdbt/ai.png" alt="AI">
+    </a>
+
+    <a href="https://levitator-lagging-dynamic.ngrok-free.dev//chat.html" class="nav-icon-btn" title="Chat">
+      <img src="https://ik.imagekit.io/rckdebdbt/chat.png" alt="Chat">
+    </a>
+
+    <input type="text" id="searchInput" placeholder="Search games..." style="padding:8px 14px;font-size:14px;border-radius:10px;border:none;background:#1a1a1a;color:white;outline:none;flex:1;max-width:260px;">
+
+    <div id="gameCount" style="font-size:13px;color:#94a3b8;white-space:nowrap;">
+      Showing <span id="shownCount">5</span> / <span id="totalCount">5</span> items
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="item-grid"></div>
+  <div style="text-align:center;margin-top:30px;"></div>
+</main>
+
+<footer>
+  <p>4games | discord.4games.net | press alt f4 for free games</p>
+</footer>
+
+<div id="fg-viewer">
+  <div id="fg-header">
+    <span id="fg-title">title</span>
+    <div id="fg-header-btns">
+      <button class="fg-btn fg-btn-fav" id="fg-fav-btn" onclick="fgToggleFav()" title="Favorite">
+        <img src="https://ik.imagekit.io/rckdebdbt/favorite.png" alt="Favorite" onerror="this.style.display='none';this.parentNode.dataset.fallback='⭐';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
+      </button>
+      <button class="fg-btn" onclick="fgReload()" title="Reload">
+        <img src="https://ik.imagekit.io/rckdebdbt/reload.png" alt="Reload" onerror="this.style.display='none';this.parentNode.dataset.fallback='↺';this.parentNode.style.fontSize='20px';this.parentNode.style.color='#94a3b8';">
+      </button>
+      <button class="fg-btn" onclick="fgOpenTab()" title="Open in New Tab">
+        <img src="https://ik.imagekit.io/rckdebdbt/newtab.png" alt="New Tab" onerror="this.style.display='none';this.parentNode.dataset.fallback='↗';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
+      </button>
+      <button class="fg-btn" onclick="fgDownload()" title="Download">
+        <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(1).png" alt="Download" onerror="this.style.display='none';this.parentNode.dataset.fallback='⬇';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
+      </button>
+      <button class="fg-btn fg-btn-close" onclick="fgClose()" title="Close">
+        <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(2).png" alt="Close" onerror="this.style.display='none';this.parentNode.dataset.fallback='✕';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#ff416c';">
+      </button>
+    </div>
+  </div>
+  <div id="fg-view-area">
+    <div id="fg-loading">
+      <video id="fg-loading-video" muted loop playsinline preload="none"
+        data-src="https://ik.imagekit.io/rckdebdbt/copy_6732C1C5-AA00-4793-B7C6-E9EFCFEA4A5B.mp4?tr=w-1280,q-60,ac-none,f-mp4"></video>
+      <div class="loading-label">LOADING...</div>
+    </div>
+    <iframe id="fg-iframe" src="about:blank" allowfullscreen
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock allow-downloads"></iframe>
+  </div>
+  <div id="fg-console" aria-hidden="true">
+    <div id="fg-console-head">
+      <span>Developer Console</span>
+    </div>
+    <div id="fg-console-output" role="log" aria-live="polite"><div class="fg-console-line">loaded console</div></div>
+  </div>
+</div>
+
+<div id="settings-panel" aria-hidden="true">
+  <div id="settings-header">
+    <span id="settings-header-title">Settings</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="fg-btn" onclick="settingsClose()" title="Close Settings">
+        <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(2).png" alt="Close"
+          onerror="this.style.display='none';this.parentNode.textContent='✕';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
+      </button>
+    </div>
+  </div>
+
+  <div id="settings-body">
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">accent color</div>
+        <div class="settings-row-desc">set accent color for button. make it look badass</div>
+        <input type="range" id="theme-hue-slider" min="0" max="360" value="186">
+        <div id="theme-hue-preview">
+          <div id="theme-hue-swatch"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">vanta fog background</div>
+        <div class="settings-row-desc">animated fog effect that follows your accent color. looks sick but uses some gpu.</div>
+        <div class="vanta-toggle-row">
+          <div id="vanta-toggle" onclick="vantaToggle()" role="switch" aria-checked="false" tabindex="0">
+            <div id="vanta-thumb"></div>
+          </div>
+          <span id="vanta-toggle-label">off</span>
+        </div>
+        <div class="vanta-sliders" id="vanta-sliders" style="display:none;">
+          <div class="vanta-slider-row">
+            <label>blur</label>
+            <input type="range" id="vanta-blur" min="0" max="10" step="1" value="6">
+            <span class="vanta-val" id="vanta-blur-val">6</span>
+          </div>
+          <div class="vanta-slider-row">
+            <label>speed</label>
+            <input type="range" id="vanta-speed" min="1" max="20" step="1" value="12">
+            <span class="vanta-val" id="vanta-speed-val">1.2</span>
+          </div>
+          <div class="vanta-slider-row">
+            <label>zoom</label>
+            <input type="range" id="vanta-zoom" min="1" max="30" step="1" value="9">
+            <span class="vanta-val" id="vanta-zoom-val">0.9</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">logo style</div>
+        <div class="settings-row-desc">swap the logo image for plain white text.</div>
+        <div class="vanta-toggle-row">
+          <div id="logo-toggle" onclick="logoToggle()" role="switch" aria-checked="false" tabindex="0">
+            <div id="logo-thumb"></div>
+          </div>
+          <span id="logo-toggle-label">image</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">liquid glass</div>
+        <div class="settings-row-desc">applies a frosted glass blur to all buttons and cards across the whole site.</div>
+        <div class="vanta-toggle-row">
+          <div id="lg-toggle" onclick="liquidGlassToggle()" role="switch" aria-checked="false" tabindex="0"
+            style="width:60px;height:32px;border-radius:99px;background:var(--card-bg);border:2px solid var(--border-dim);position:relative;cursor:pointer;flex-shrink:0;transition:background 0.35s cubic-bezier(0.4,0,0.2,1),border-color 0.35s cubic-bezier(0.4,0,0.2,1),box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);outline:none;">
+            <div id="lg-thumb"
+              style="position:absolute;top:50%;left:3px;width:22px;height:22px;border-radius:50%;background:#64748b;box-shadow:0 1px 4px rgba(0,0,0,0.5);transform:translateY(-50%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),background 0.35s,box-shadow 0.35s;"></div>
+          </div>
+          <span id="lg-toggle-label" style="font-size:14px;font-weight:600;color:var(--text-dim);transition:color 0.3s;min-width:24px;">off</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">panic key</div>
+        <div class="settings-row-desc">panic key press that key to change tab instantly.</div>
+        <input type="url" id="panic-key-destination" placeholder="https://www.google.com" value="https://www.google.com" style="width:100%;box-sizing:border-box;padding:10px 14px;background:var(--card-bg);border:2px solid var(--border-dim);border-radius:10px;color:#fff;font-family:'Fredoka',sans-serif;font-size:15px;outline:none;">
+        <div id="panic-key-display">
+          <span id="panic-key-badge">—</span>
+          <button id="panic-key-btn" onclick="panicKeyListen()">Set Key</button>
+          <button id="panic-key-clear" onclick="panicKeyClear()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">change page title</div>
+        <div class="settings-row-desc">tab cloak essentially. change page title name</div>
+        <input type="text" id="page-title-input" placeholder="e.g. Google Classroom" maxlength="120">
+        <button id="page-title-save" onclick="pageTitleSave()">Apply Title</button>
+        <div id="page-title-feedback"></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">open in blank</div>
+        <div class="settings-row-desc">opens site in about blank :3</div>
+        <button id="open-about-blank-btn" onclick="openCurrentPageInBlank()">Open Page</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">play counting</div>
+        <div class="settings-row-desc">track and display how many times each game has been played. turn off to hide all play counts and stop recording plays.</div>
+        <div class="vanta-toggle-row">
+          <div id="play-count-toggle" onclick="playCountingToggle()" role="switch" aria-checked="true" tabindex="0"
+            style="width:60px;height:32px;border-radius:99px;background:var(--card-bg);border:2px solid var(--border-dim);position:relative;cursor:pointer;flex-shrink:0;transition:background 0.35s cubic-bezier(0.4,0,0.2,1),border-color 0.35s cubic-bezier(0.4,0,0.2,1),box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);outline:none;">
+            <div id="play-count-thumb"
+              style="position:absolute;top:50%;left:3px;width:22px;height:22px;border-radius:50%;background:#64748b;box-shadow:0 1px 4px rgba(0,0,0,0.5);transform:translateY(-50%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),background 0.35s,box-shadow 0.35s;"></div>
+          </div>
+          <span id="play-count-label" style="font-size:14px;font-weight:600;color:var(--text-dim);transition:color 0.3s;min-width:24px;">on</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-row">
+        <div class="settings-row-title">sort by most played</div>
+        <div class="settings-row-desc">rank cards by total play count instead of alphabetically. favorites still float to the top.</div>
+        <div class="vanta-toggle-row">
+          <div id="sort-plays-toggle" onclick="sortPlaysToggle()" role="switch" aria-checked="false" tabindex="0"
+            style="width:60px;height:32px;border-radius:99px;background:var(--card-bg);border:2px solid var(--border-dim);position:relative;cursor:pointer;flex-shrink:0;transition:background 0.35s cubic-bezier(0.4,0,0.2,1),border-color 0.35s cubic-bezier(0.4,0,0.2,1),box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);outline:none;">
+            <div id="sort-plays-thumb"
+              style="position:absolute;top:50%;left:3px;width:22px;height:22px;border-radius:50%;background:#64748b;box-shadow:0 1px 4px rgba(0,0,0,0.5);transform:translateY(-50%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),background 0.35s,box-shadow 0.35s;"></div>
+          </div>
+          <span id="sort-plays-label" style="font-size:14px;font-weight:600;color:var(--text-dim);transition:color 0.3s;min-width:24px;">off</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+(function () {
+
+  var firebaseConfig = {
+    apiKey:            "AIzaSyCkTYpokbDM0K-7g1_XPAzw7QxLn1S5hs0",
+    authDomain:        "math-stats-69472.firebaseapp.com",
+    projectId:         "math-stats-69472",
+    storageBucket:     "math-stats-69472.firebasestorage.app",
+    messagingSenderId: "115172329578",
+    appId:             "1:115172329578:web:c69069011c5522f13a2213",
+    measurementId:     "G-EXN929T8D3"
+  };
+
+ 
+  var fbApp = firebase.apps.length
+    ? firebase.apps[0]
+    : firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore(fbApp);
+  var COLLECTION = 'playCounts';
+
+
+  function toDocId(title) {
+    return title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').slice(0, 100);
+  }
+
+  function setBadge(badge, count, title) {
+    if (!badge) return;
+    if (title && window.setPlayCountCache) window.setPlayCountCache(title, count);
+    badge.classList.remove('loading');
+    if (count > 0) {
+      badge.textContent = count.toLocaleString() + (count === 1 ? ' play' : ' plays');
+      badge.classList.add('has-count');
+    } else {
+      badge.textContent = 'nobody played ts yet 🥀';
+      badge.classList.remove('has-count');
+    }
+  }
+
+
+  window.db_playCounts = db.collection(COLLECTION);
+
+
+  window.bulkFetchPlayCounts = function (callback) {
+    db.collection(COLLECTION).get()
+      .then(function (snap) {
+        snap.forEach(function (doc) {
+          var data = doc.data();
+          if (data.title && window.setPlayCountCache) {
+            window.setPlayCountCache(data.title, data.count || 0);
+          }
+        });
+        window.playCountsFullyLoaded = true;
+        if (callback) callback();
+      })
+      .catch(function () {
+        if (callback) callback();
+      });
+  };
+
+ 
+  window.loadPlayCount = function (title, badge) {
+    if (!badge) return;
+    if (!window.playCountingEnabled) return;
+    if (window.playCountsFullyLoaded) {
+      var cached = (window.playCountCache && window.playCountCache[title]) || 0;
+      setBadge(badge, cached, title);
+      return;
+    }
+    
+    badge.textContent = 'loading...';
+    badge.classList.add('loading');
+    db.collection(COLLECTION).doc(toDocId(title)).get()
+      .then(function (snap) {
+        var count = snap.exists ? (snap.data().count || 0) : 0;
+        setBadge(badge, count, title);
+        // Don't resort on individual hover-loads — it reshuffles the grid
+        // mid-browse every time a count comes in. The bulk fetch on toggle
+        // already handles sorting with complete data.
+      })
+      .catch(function () { setBadge(badge, 0, title); });
+  };
+
+ 
+  window.trackPlay = function (title) {
+    if (!window.playCountingEnabled) return;
+    var ref = db.collection(COLLECTION).doc(toDocId(title));
+    
+    ref.set(
+      { title: title, count: firebase.firestore.FieldValue.increment(1) },
+      { merge: true }
+    )
+    .then(function () { return ref.get(); })
+    .then(function (snap) {
+      var count = snap.exists ? (snap.data().count || 0) : 0;
+      document.querySelectorAll('.card').forEach(function (card) {
+        var lbl = card.querySelector('.card-title-text');
+        if (lbl && lbl.textContent.trim() === title) {
+          var b = card.querySelector('.play-count-badge');
+          if (b) setBadge(b, count, title);
+        }
+      });
+     
+      if (window.sortByPlaysEnabled && window.playCountsFullyLoaded && window.fgResortGrid) window.fgResortGrid();
+    })
+    .catch(function (err) { console.warn('trackPlay error:', err); });
+  };
+})();
+</script>
+
+<script>
+(function () {
+  var FAVS_KEY = '4g_favourites';
+  var memoryFavs = [];
+
+  function getFavs() {
+    try {
+      var stored = JSON.parse(window.localStorage.getItem(FAVS_KEY));
+      if (Array.isArray(stored)) memoryFavs = stored;
+    } catch (e) {}
+    return memoryFavs.slice();
+  }
+  function saveFavs(arr) {
+    memoryFavs = arr.slice();
+    try { window.localStorage.setItem(FAVS_KEY, JSON.stringify(memoryFavs)); }
+    catch (e) {}
+  }
+  function isFav(title) { return getFavs().includes(title); }
+  function addFav(title) { var favs = getFavs(); if (!favs.includes(title)) { favs.push(title); saveFavs(favs); } }
+  function removeFav(title) { saveFavs(getFavs().filter(function(f){ return f !== title; })); }
+
+  window.fgFavUtils = { isFav: isFav, getFavs: getFavs };
+
+  function updateFavBtn() {
+    var btn = document.getElementById('fg-fav-btn');
+    if (!btn) return;
+    var active = !!currentTitle && isFav(currentTitle);
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
+    btn.title = active ? 'Remove favorite' : 'Add to favorites';
+  }
+
+  var loadingIssueTimer = null;
+
+  function startLoadingIssueTimer() {
+    clearTimeout(loadingIssueTimer);
+    loadingIssueTimer = setTimeout(function() {
+      var viewer = document.getElementById('fg-viewer');
+      var overlay = document.getElementById('fg-loading');
+      if (viewer.classList.contains('open') && overlay.style.display !== 'none') {
+        alert('report loading issues at discord.4games.net');
+      }
+    }, 60000);
+  }
+
+  var currentItemUrl = '';
+  var currentTitle   = '';
+
+  function consoleLine(message, type) {
+    var output = document.getElementById('fg-console-output');
+    if (!output) return;
+    var line = document.createElement('div');
+    line.className = 'fg-console-line' + (type ? ' ' + type : '');
+    line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+  }
+
+  window.fgToggleConsole = function() {
+    var panel = document.getElementById('fg-console');
+    var isOpen = panel.classList.toggle('open');
+    panel.setAttribute('aria-hidden', String(!isOpen));
+    document.getElementById('fg-console-btn').classList.toggle('active', isOpen);
+    if (isOpen) consoleLine('console loaded 2');
+  };
+
+  function loadIntoIframe(url) {
+    if (/jsdelivr\.net|cloudinary\.com|ngrok/i.test(url)) {
+      fetch(url)
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          var base = '<base href="' + url + '">';
+          if (/<head[\s>]/i.test(html)) {
+            html = html.replace(/(<head[^>]*>)/i, '$1' + base);
+          } else {
+            html = base + html;
+          }
+          var blob = new Blob([html], { type: 'text/html' });
+          document.getElementById('fg-iframe').src = URL.createObjectURL(blob);
+        })
+        .catch(function() { document.getElementById('fg-iframe').src = url; });
+    } else {
+      document.getElementById('fg-iframe').src = url;
+    }
+  }
+
+  window.fgOpen = function(itemUrl, title) {
+    currentItemUrl = itemUrl;
+    currentTitle   = title || 'item';
+
+    if (window.trackPlay) window.trackPlay(currentTitle);
+
+    consoleLine('Loading: ' + currentTitle);
+    document.getElementById('fg-title').textContent = currentTitle;
+    loadIntoIframe(itemUrl);
+    var loadingOverlay = document.getElementById('fg-loading');
+    loadingOverlay.classList.remove('fade-out');
+    loadingOverlay.style.display = 'flex';
+    var loadingVideo = document.getElementById('fg-loading-video');
+    startLoadingIssueTimer();
+    if (!loadingVideo.src) loadingVideo.src = loadingVideo.dataset.src;
+    loadingVideo.currentTime = 0;
+    loadingVideo.play().catch(function() {});
+    document.getElementById('fg-viewer').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    updateFavBtn();
+  };
+
+  window.fgClose = function() {
+    clearTimeout(loadingIssueTimer);
+    document.getElementById('fg-viewer').classList.remove('open');
+    document.getElementById('fg-loading-video').pause();
+    document.body.style.overflow = '';
+    setTimeout(function() {
+      if (!document.getElementById('fg-viewer').classList.contains('open')) {
+        document.getElementById('fg-iframe').src = 'about:blank';
+      }
+    }, 300);
+  };
+
+  window.fgToggleFav = function() {
+    if (!currentTitle) return;
+    if (isFav(currentTitle)) removeFav(currentTitle);
+    else addFav(currentTitle);
+    updateFavBtn();
+    document.querySelectorAll('.card').forEach(function(card) {
+      var gt = card.querySelector('.card-title-text');
+      if (gt && gt.textContent.trim() === currentTitle) {
+        card.classList.toggle('fav-card', isFav(currentTitle));
+      }
+    });
+    if (window.fgResortGrid) window.fgResortGrid();
+  };
+
+  window.fgReload = function() {
+    consoleLine('Reloading: ' + currentTitle);
+    var loadingOverlay = document.getElementById('fg-loading');
+    loadingOverlay.classList.remove('fade-out');
+    loadingOverlay.style.display = 'flex';
+    var loadingVideo = document.getElementById('fg-loading-video');
+    startLoadingIssueTimer();
+    if (!loadingVideo.src) loadingVideo.src = loadingVideo.dataset.src;
+    loadingVideo.currentTime = 0;
+    loadingVideo.play().catch(function() {});
+    loadIntoIframe(currentItemUrl);
+  };
+
+  window.fgOpenTab = function() {
+    confirm("new tab button will be fixed eventually. probably never bc im lazy");
+  };
+
+  window.fgDownload = function() {
+    confirm("download button will be fixed eventually. probably never bc im lazy");
+  };
+
+  document.getElementById('fg-iframe').addEventListener('load', function() {
+    consoleLine('Load event fired.');
+    var loadingOverlay = document.getElementById('fg-loading');
+    var loadingVideo = document.getElementById('fg-loading-video');
+    clearTimeout(loadingIssueTimer);
+    if (!document.getElementById('fg-viewer').classList.contains('open')) return;
+    loadingOverlay.style.display = 'none';
+    loadingOverlay.classList.remove('fade-out');
+    loadingVideo.pause();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('fg-viewer').classList.contains('open')) fgClose();
+  });
+
+  document.addEventListener('click', function(e) {
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    if (link.classList.contains('nav-icon-btn')) {
+      e.preventDefault();
+      var navTitle = link.getAttribute('title') || 'Menu';
+      if (/ngrok/i.test(href)) {
+        fetch(href)
+          .then(function(r) { return r.text(); })
+          .then(function(html) {
+            var base = '<base href="' + href + '">';
+            html = /<head[\s>]/i.test(html)
+              ? html.replace(/(<head[^>]*>)/i, '$1' + base)
+              : base + html;
+            var blob = new Blob([html], { type: 'text/html' });
+            fgOpen(URL.createObjectURL(blob), navTitle);
+          })
+          .catch(function() { fgOpen(href, navTitle); });
+      } else {
+        fgOpen(href, navTitle);
+      }
+      return;
+    }
+    if (href.startsWith('http')) {
+      e.preventDefault();
+      var title = 'Item';
+      var card = link.closest('.card');
+      if (card) { var gt = card.querySelector('.card-title-text'); if (gt) title = gt.textContent.trim(); }
+      fgOpen(href, title);
+      return;
+    }
+    if (href.startsWith('/games/')) {
+      e.preventDefault();
+      var title = 'Item';
+      var card = link.closest('.card');
+      if (card) { var gt = card.querySelector('.card-title-text'); if (gt) title = gt.textContent.trim(); }
+      fgOpen(href, title);
+      return;
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var SETTINGS_KEY = '4g_settings';
+
+  function loadSettings() {
+    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
+    catch(e) { return {}; }
+  }
+  function saveSettings(obj) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj)); } catch(e) {}
+  }
+
+  function applyHue(hue) {
+    document.documentElement.style.setProperty('--theme-hue', hue);
+    var swatch = document.getElementById('theme-hue-swatch');
+    if (swatch) swatch.style.background = 'hsl(' + hue + ',60%,40%)';
+  }
+
+  var slider = document.getElementById('theme-hue-slider');
+  slider.addEventListener('input', function() {
+    var hue = parseInt(this.value, 10);
+    applyHue(hue);
+    var s = loadSettings(); s.themeHue = hue; saveSettings(s);
+    if (window.vantaUpdateColors) window.vantaUpdateColors();
+  });
+
+  var panicKey = null;
+  var panicDestination = 'https://www.google.com';
+  var destinationInput = document.getElementById('panic-key-destination');
+  function savePanicDestination(finalize) {
+    if (!destinationInput) return;
+    var value = destinationInput.value.trim();
+    if (!value) {
+      if (finalize) {
+        value = 'https://www.google.com';
+        destinationInput.value = value;
+      } else { return; }
+    }
+    try {
+      var parsed = new URL(value);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('Invalid protocol');
+      panicDestination = parsed.href;
+      var settings = loadSettings();
+      settings.panicDestination = panicDestination;
+      saveSettings(settings);
+      if (finalize) destinationInput.value = panicDestination;
+    } catch (e) {
+      if (finalize) {
+        destinationInput.value = panicDestination || 'https://www.google.com';
+      }
+    }
+  }
+  if (destinationInput) {
+    destinationInput.addEventListener('input', function() { savePanicDestination(false); });
+    destinationInput.addEventListener('change', function() { savePanicDestination(true); });
+    destinationInput.addEventListener('blur', function() { savePanicDestination(true); });
+  }
+  var listenMode = false;
+
+  function updatePanicBadge() {
+    var badge = document.getElementById('panic-key-badge');
+    var btn   = document.getElementById('panic-key-btn');
+    if (!badge || !btn) return;
+    badge.textContent = panicKey || '\u2014';
+    btn.textContent   = listenMode ? 'Press any key...' : 'Set Key';
+    btn.classList.toggle('listening', listenMode);
+  }
+
+  window.panicKeyListen = function() {
+    listenMode = true;
+    updatePanicBadge();
+  };
+
+  window.panicKeyClear = function() {
+    panicKey  = null;
+    listenMode = false;
+    updatePanicBadge();
+    var s = loadSettings(); delete s.panicKey; saveSettings(s);
+  };
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('settings-panel').classList.contains('open')) {
+      settingsClose();
+      return;
+    }
+    if (listenMode) {
+      e.preventDefault();
+      panicKey   = e.key;
+      listenMode = false;
+      updatePanicBadge();
+      var s = loadSettings(); s.panicKey = panicKey; saveSettings(s);
+      return;
+    }
+    var target = e.target;
+    var tag = target && target.tagName ? target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || (target && target.isContentEditable)) return;
+    if (panicKey && e.key === panicKey) {
+      window.location.href = panicDestination || 'https://www.google.com';
+    }
+  });
+
+  window.pageTitleSave = function() {
+    var val = document.getElementById('page-title-input').value.trim();
+    document.title = val || '4Math Tutoring Center';
+    var s = loadSettings(); s.pageTitle = val; saveSettings(s);
+    var fb = document.getElementById('page-title-feedback');
+    fb.textContent = val ? 'Title set to "' + val + '"' : 'Title reset to default.';
+    setTimeout(function() { fb.textContent = ''; }, 3000);
+  };
+
+  window.openCurrentPageInBlank = function() {
+    var blankWindow = window.open('about:blank', '_blank');
+    if (!blankWindow) { alert('Pop-up blocked. Allow pop-ups for this site and try again.'); return; }
+    try {
+      blankWindow.document.open();
+      blankWindow.document.write('<!doctype html>' + document.documentElement.outerHTML);
+      blankWindow.document.close();
+    } catch (e) {
+      blankWindow.location.href = 'about:blank';
+      alert('The browser prevented copying this page into about:blank.');
+    }
+  };
+
+  window.settingsOpen = function() {
+    document.getElementById('settings-panel').classList.add('open');
+    document.getElementById('settings-panel').setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  };
+  window.settingsClose = function() {
+    document.getElementById('settings-panel').classList.remove('open');
+    document.getElementById('settings-panel').setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  var saved = loadSettings();
+
+  if (saved.themeHue !== undefined) {
+    slider.value = saved.themeHue;
+    applyHue(saved.themeHue);
+  } else {
+    applyHue(186);
+  }
+
+  if (saved.panicKey) {
+    panicKey = saved.panicKey;
+    updatePanicBadge();
+  }
+
+  if (saved.panicDestination) {
+    try {
+      var parsedDestination = new URL(saved.panicDestination, window.location.href);
+      if (parsedDestination.protocol === 'http:' || parsedDestination.protocol === 'https:') {
+        panicDestination = parsedDestination.href;
+      }
+    } catch (e) {}
+  }
+  if (destinationInput) destinationInput.value = panicDestination;
+
+  if (saved.pageTitle) {
+    document.title = saved.pageTitle;
+    document.getElementById('page-title-input').value = saved.pageTitle;
+  }
+
+})();
+</script>
+
+<style>
+#css-fog {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  display: none;
+  will-change: transform;
+}
+#css-fog.active { display: block; }
+
+.fog-blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.7;
+  will-change: transform;
+}
+
+@keyframes fog-drift-a {
+  0%   { transform: translate(0%,   0%)   scale(1);    }
+  33%  { transform: translate(12%,  8%)   scale(1.08); }
+  66%  { transform: translate(-8%,  14%)  scale(0.95); }
+  100% { transform: translate(0%,   0%)   scale(1);    }
+}
+@keyframes fog-drift-b {
+  0%   { transform: translate(0%,   0%)   scale(1);    }
+  33%  { transform: translate(-14%, -6%)  scale(1.1);  }
+  66%  { transform: translate(6%,  -12%)  scale(0.92); }
+  100% { transform: translate(0%,   0%)   scale(1);    }
+}
+@keyframes fog-drift-c {
+  0%   { transform: translate(0%,   0%)   scale(1);    }
+  40%  { transform: translate(10%, -10%)  scale(1.05); }
+  70%  { transform: translate(-6%,  6%)   scale(1.12); }
+  100% { transform: translate(0%,   0%)   scale(1);    }
+}
+@keyframes fog-drift-d {
+  0%   { transform: translate(0%,   0%)   scale(1);    }
+  50%  { transform: translate(-10%, 10%)  scale(0.9);  }
+  100% { transform: translate(0%,   0%)   scale(1);    }
+}
+@keyframes fog-drift-e {
+  0%   { transform: translate(0%,   0%)   scale(1);    }
+  30%  { transform: translate(8%,   12%)  scale(1.06); }
+  65%  { transform: translate(-12%, 4%)   scale(0.96); }
+  100% { transform: translate(0%,   0%)   scale(1);    }
+}
+</style>
+
+<script>
+(function () {
+  var SETTINGS_KEY = '4g_settings';
+  var fogEnabled  = false;
+  var storedBlur  = 2;
+  var storedSpeed = 12;
+  var storedZoom  = 9;
+
+  var fogEl = null;
+
+  var BLOBS = [
+    ['-10%', '-15%', 90, 80,  'fog-drift-a', 0   ],
+    [ '50%', '-10%', 80, 75,  'fog-drift-b', 1.7 ],
+    [ '-5%',  '50%', 75, 85,  'fog-drift-c', 3.1 ],
+    [ '55%',  '55%', 85, 70,  'fog-drift-d', 0.8 ],
+    [ '20%',  '15%', 70, 90,  'fog-drift-e', 2.4 ],
+  ];
+
+  function ensureFogEl() {
+    if (fogEl) return fogEl;
+    fogEl = document.createElement('div');
+    fogEl.id = 'css-fog';
+    BLOBS.forEach(function(b) {
+      var d = document.createElement('div');
+      d.className = 'fog-blob';
+      d.style.left   = b[0];
+      d.style.top    = b[1];
+      d.style.width  = b[2] + 'vw';
+      d.style.height = b[3] + 'vh';
+      d.style.animationName           = b[4];
+      d.style.animationTimingFunction = 'ease-in-out';
+      d.style.animationIterationCount = 'infinite';
+      d.style.animationDelay          = b[5] + 's';
+      fogEl.appendChild(d);
+    });
+    document.body.prepend(fogEl);
+    return fogEl;
+  }
+
+  function getHue() {
+    return parseInt(document.documentElement.style.getPropertyValue('--theme-hue') || '186', 10);
+  }
+
+  function applyColors() {
+    if (!fogEl) return;
+    var hue = getHue();
+    var cols = [
+      'hsl(' + hue              + ',60%,28%)',
+      'hsl(' + (hue + 20) % 360 + ',45%,18%)',
+      'hsl(' + hue              + ',55%,22%)',
+      'hsl(' + (hue - 15 + 360) % 360 + ',40%,15%)',
+      'hsl(' + (hue + 10) % 360 + ',50%,24%)',
+    ];
+    fogEl.querySelectorAll('.fog-blob').forEach(function(b, i) {
+      var c = cols[i % cols.length];
+      b.style.background = 'radial-gradient(ellipse at center, ' + c + ' 0%, transparent 70%)';
+    });
+  }
+
+  function applyBlur() {
+    if (!fogEl) return;
+    var px = 20 + storedBlur * 10;
+    fogEl.style.filter = 'blur(' + px + 'px)';
+  }
+
+  function applySpeed() {
+    if (!fogEl) return;
+    var dur = (64 - storedSpeed * 3).toFixed(1) + 's';
+    fogEl.querySelectorAll('.fog-blob').forEach(function(b) {
+      b.style.animationDuration = dur;
+    });
+  }
+
+  function applyZoom() {
+    if (!fogEl) return;
+    var sc = (0.7 + storedZoom * 0.043).toFixed(3);
+    fogEl.style.transform = 'scale(' + sc + ')';
+    fogEl.style.transformOrigin = '50% 50%';
+  }
+
+  function fogStart() {
+    var el = ensureFogEl();
+    applyColors();
+    applyBlur();
+    applySpeed();
+    applyZoom();
+    el.classList.add('active');
+  }
+
+  function fogStop() {
+    if (fogEl) fogEl.classList.remove('active');
+  }
+
+  function setUI(on) {
+    var toggle  = document.getElementById('vanta-toggle');
+    var label   = document.getElementById('vanta-toggle-label');
+    var sliders = document.getElementById('vanta-sliders');
+    if (!toggle) return;
+    toggle.setAttribute('aria-checked', String(on));
+    toggle.classList.toggle('on', on);
+    label.textContent = on ? 'on' : 'off';
+    label.style.color = on
+      ? 'hsl(' + (document.documentElement.style.getPropertyValue('--theme-hue') || '186') + ',70%,65%)'
+      : '';
+    sliders.style.display = on ? 'flex' : 'none';
+  }
+
+  window.vantaToggle = function () {
+    fogEnabled = !fogEnabled;
+    if (fogEnabled) fogStart(); else fogStop();
+    setUI(fogEnabled);
+    persist();
+    var t = document.getElementById('vanta-toggle');
+    if (t) {
+      t.classList.remove('ping');
+      void t.offsetWidth;
+      t.classList.add('ping');
+      setTimeout(function() { t.classList.remove('ping'); }, 500);
+    }
+  };
+
+  window.vantaUpdateColors = function () { applyColors(); };
+
+  function persist() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      s.vantaFog   = fogEnabled;
+      s.vantaBlur  = storedBlur;
+      s.vantaSpeed = storedSpeed;
+      s.vantaZoom  = storedZoom;
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    } catch (e) {}
+  }
+
+  function wireSlider(id, valId, getStored, setStored, divisor, applyFn) {
+    var el  = document.getElementById(id);
+    var val = document.getElementById(valId);
+    if (!el || !val) return;
+    el.value = getStored();
+    val.textContent = (getStored() / divisor).toFixed(1);
+    el.addEventListener('input', function () {
+      var raw = parseInt(this.value, 10);
+      val.textContent = (raw / divisor).toFixed(1);
+      setStored(raw);
+      applyFn();
+      persist();
+    });
+  }
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    if (saved.vantaBlur  !== undefined) storedBlur  = saved.vantaBlur;
+    if (saved.vantaSpeed !== undefined) storedSpeed = saved.vantaSpeed;
+    if (saved.vantaZoom  !== undefined) storedZoom  = saved.vantaZoom;
+    if (saved.vantaFog) {
+      fogEnabled = true;
+      window.addEventListener('load', function () { fogStart(); setUI(true); });
+    }
+  } catch (e) {}
+
+  document.addEventListener('DOMContentLoaded', function () {
+    wireSlider('vanta-blur',  'vanta-blur-val',
+      function(){ return storedBlur; },  function(v){ storedBlur  = v; }, 10, applyBlur);
+    wireSlider('vanta-speed', 'vanta-speed-val',
+      function(){ return storedSpeed; }, function(v){ storedSpeed = v; }, 10, applySpeed);
+    wireSlider('vanta-zoom',  'vanta-zoom-val',
+      function(){ return storedZoom; },  function(v){ storedZoom  = v; }, 10, applyZoom);
+
+    setUI(fogEnabled);
+  });
+
+})();
+</script>
+
+<script>
+(function () {
+  var SETTINGS_KEY = '4g_settings';
+  var lgEnabled = false;
+
+  function getHue() {
+    return document.documentElement.style.getPropertyValue('--theme-hue') || '186';
+  }
+
+  function setLGUI(on) {
+    var toggle = document.getElementById('lg-toggle');
+    var thumb  = document.getElementById('lg-thumb');
+    var label  = document.getElementById('lg-toggle-label');
+    if (!toggle) return;
+    toggle.setAttribute('aria-checked', String(on));
+    toggle.style.background    = on ? 'hsl(' + getHue() + ',65%,32%)' : '';
+    toggle.style.borderColor   = on ? 'hsl(' + getHue() + ',65%,52%)' : '';
+    toggle.style.boxShadow     = on ? '0 0 14px hsl(' + getHue() + ',80%,45%,0.45)' : '';
+    thumb.style.transform      = on ? 'translateY(-50%) translateX(28px)' : 'translateY(-50%)';
+    thumb.style.background     = on ? '#fff' : '#64748b';
+    thumb.style.boxShadow      = on ? '0 0 8px hsl(' + getHue() + ',90%,70%,0.7),0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(0,0,0,0.5)';
+    label.textContent          = on ? 'on' : 'off';
+    label.style.color          = on ? 'hsl(' + getHue() + ',70%,65%)' : '';
+  }
+
+  function applyLG(on) {
+    document.body.classList.toggle('liquid-glass', on);
+  }
+
+  function persist() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      s.liquidGlass = lgEnabled;
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    } catch(e) {}
+  }
+
+  window.liquidGlassToggle = function () {
+    lgEnabled = !lgEnabled;
+    applyLG(lgEnabled);
+    setLGUI(lgEnabled);
+    persist();
+    var t = document.getElementById('lg-toggle');
+    if (t) {
+      t.style.outline = '2px solid hsl(' + getHue() + ',70%,55%)';
+      t.style.outlineOffset = '3px';
+      setTimeout(function() { t.style.outline = ''; t.style.outlineOffset = ''; }, 400);
+    }
+  };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    if (saved.liquidGlass) {
+      lgEnabled = true;
+      applyLG(true);
+      document.addEventListener('DOMContentLoaded', function () { setLGUI(true); });
+    }
+  } catch(e) {}
+})();
+</script>
+
+<script>
+(function() {
+  var container = document.querySelector('.item-grid');
+  var shownEl   = document.getElementById('shownCount');
+  var totalEl   = document.getElementById('totalCount');
+  var input     = document.getElementById('searchInput');
+  var allCards  = [];
+  var currentShown = 0;
+
+  function animate(el, from, to, duration) {
+    duration = duration || 300;
+    var start = performance.now();
+    function update(now) {
+      var progress = Math.min((now - start) / duration, 1);
+      el.textContent = Math.floor(from + (to - from) * progress);
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+
+  var playCountCache = {};
+  window.playCountCache = playCountCache;
+  window.setPlayCountCache = function(title, count) {
+    playCountCache[title] = count;
+  };
+
+  function sortCards() {
+    var favs    = window.fgFavUtils ? window.fgFavUtils.getFavs() : [];
+    var byPlays = window.sortByPlaysEnabled || false;
+    allCards.sort(function(a, b) {
+      var aTitle = a.querySelector('.card-title-text').textContent.trim();
+      var bTitle = b.querySelector('.card-title-text').textContent.trim();
+      var aFav = favs.includes(aTitle) ? 0 : 1;
+      var bFav = favs.includes(bTitle) ? 0 : 1;
+     
+      if (aFav !== bFav) return aFav - bFav;
+      if (byPlays) {
+  
+        var aC = playCountCache[aTitle] || 0;
+        var bC = playCountCache[bTitle] || 0;
+        if (bC !== aC) return bC - aC;
+      }
+      return aTitle.localeCompare(bTitle);
+    });
+    allCards.forEach(function(card) { container.appendChild(card); });
+  }
+
+  window.fgResortGrid = sortCards;
+
+
+  window.sortByPlaysEnabled = false;
+
+  window.sortPlaysToggle = function() {
+    var SETTINGS_KEY = '4g_settings';
+    window.sortByPlaysEnabled = !window.sortByPlaysEnabled;
+    var toggle = document.getElementById('sort-plays-toggle');
+    var thumb  = document.getElementById('sort-plays-thumb');
+    var label  = document.getElementById('sort-plays-label');
+    var hue    = document.documentElement.style.getPropertyValue('--theme-hue') || '186';
+    var on     = window.sortByPlaysEnabled;
+    toggle.setAttribute('aria-checked', String(on));
+    toggle.style.background  = on ? 'hsl(' + hue + ',65%,32%)' : '';
+    toggle.style.borderColor = on ? 'hsl(' + hue + ',65%,52%)' : '';
+    toggle.style.boxShadow   = on ? '0 0 14px hsl(' + hue + ',80%,45%,0.45)' : '';
+    thumb.style.transform    = on ? 'translateY(-50%) translateX(28px)' : 'translateY(-50%)';
+    thumb.style.background   = on ? '#fff' : '#64748b';
+    thumb.style.boxShadow    = on
+      ? '0 0 8px hsl(' + hue + ',90%,70%,0.7),0 1px 4px rgba(0,0,0,0.3)'
+      : '0 1px 4px rgba(0,0,0,0.5)';
+    label.textContent = on ? 'on' : 'off';
+    label.style.color = on ? 'hsl(' + hue + ',70%,65%)' : '';
+
+    if (on) {
+      if (window.playCountsFullyLoaded) {
+        // already have all counts, just resort
+        sortCards();
+      } else if (window.bulkFetchPlayCounts) {
+        // fetch all counts then resort
+        window.bulkFetchPlayCounts(sortCards);
+      } else {
+        sortCards();
+      }
+    } else {
+      sortCards();
+    }
+
+    try {
+      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      s.sortByPlays = on;
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    } catch(e) {}
+  };
+
+  (function() {
+    try {
+      var s = JSON.parse(localStorage.getItem('4g_settings') || '{}');
+      if (s.sortByPlays) {
+        window.sortByPlaysEnabled = true;
+        // Apply UI state immediately once DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+          var toggle = document.getElementById('sort-plays-toggle');
+          var thumb  = document.getElementById('sort-plays-thumb');
+          var label  = document.getElementById('sort-plays-label');
+          var hue    = document.documentElement.style.getPropertyValue('--theme-hue') || '186';
+          if (!toggle) return;
+          toggle.setAttribute('aria-checked', 'true');
+          toggle.style.background  = 'hsl(' + hue + ',65%,32%)';
+          toggle.style.borderColor = 'hsl(' + hue + ',65%,52%)';
+          toggle.style.boxShadow   = '0 0 14px hsl(' + hue + ',80%,45%,0.45)';
+          thumb.style.transform    = 'translateY(-50%) translateX(28px)';
+          thumb.style.background   = '#fff';
+          label.textContent        = 'on';
+          label.style.color        = 'hsl(' + hue + ',70%,65%)';
+        });
+        // sortByPlays restore: bulk fetch runs AFTER fetchItems() populates allCards.
+        // We hook into the existing fetchItems promise chain via fgResortGrid which is
+        // set after cards are built, so we just flag that a resort+fetch is pending.
+        window._pendingSortByPlaysRestore = true;
+      }
+    } catch(e) {}
+  })();
+
+  var BASE_URL = 'https://cdn.jsdelivr.net/gh/electricxmaxx/mathassignments@main';
+
+  fetchItems()
+    .then(function(items) {
+      var favs = window.fgFavUtils ? window.fgFavUtils.getFavs() : [];
+
+      items.forEach(function(item) {
+        var url = /^https?:\/\//i.test(item.url) ? item.url : BASE_URL + '/' + item.url;
+        var a = document.createElement('a');
+        a.href = url;
+        a.className = 'card';
+        if (favs.includes(item.title)) a.classList.add('fav-card');
+
+        // Build image/placeholder
+        function cardThumb(item) {
+          if (item.image) {
+            var imgUrl = /^https?:\/\//i.test(item.image) ? item.image : BASE_URL + '/' + item.image;
+            return '<img class="card-img" src="' + imgUrl + '" alt="' + item.title + '" loading="lazy">';
+          }
+          // Gradient placeholder based on title hash
+          var hash = 0;
+          for (var ci = 0; ci < item.title.length; ci++) hash = ((hash << 5) - hash) + item.title.charCodeAt(ci);
+          hash = Math.abs(hash);
+          var hue1 = hash % 360;
+          var hue2 = (hue1 + 40) % 360;
+          var initials = item.title.replace(/[^A-Za-z0-9 ]/g, '').split(' ')
+            .filter(function(w){ return w.length > 0; }).slice(0, 2)
+            .map(function(w){ return w[0].toUpperCase(); }).join('');
+          if (!initials) initials = item.title.slice(0, 2).toUpperCase();
+          var grad = 'linear-gradient(135deg, hsl(' + hue1 + ',55%,28%), hsl(' + hue2 + ',60%,20%))';
+          return '<div class="card-img-placeholder" style="background:' + grad + ';">' + initials + '</div>';
+        }
+
+        a.innerHTML =
+          cardThumb(item) +
+          '<div class="card-title-bar item-label">' +
+            '<span class="card-title-text">' + item.title + '</span>' +
+            '<div class="play-count-badge"></div>' +
+          '</div>';
+
+        var badge = a.querySelector('.play-count-badge');
+        var countLoaded = false;
+        a.addEventListener('mouseenter', function () {
+          if (!countLoaded) {
+            countLoaded = true;
+            if (window.loadPlayCount) window.loadPlayCount(item.title, badge);
+          }
+        });
+
+        container.appendChild(a);
+        allCards.push(a);
+      });
+
+      // If sort-by-plays was saved and needs restoring, bulk fetch then resort;
+      // otherwise just do the initial alphabetical sort.
+      if (window._pendingSortByPlaysRestore && window.bulkFetchPlayCounts) {
+        window._pendingSortByPlaysRestore = false;
+        window.bulkFetchPlayCounts(sortCards);
+      } else {
+        sortCards();
+      }
+
+      var total = allCards.length;
+      totalEl.textContent = total;
+      animate(shownEl, 0, total);
+      currentShown = total;
+
+      input.addEventListener('input', function() {
+        var filter = input.value.toLowerCase();
+        var visible = 0;
+        allCards.forEach(function(card) {
+          var name = card.querySelector('.card-title-text').textContent.toLowerCase();
+          if (name.includes(filter)) { card.style.display = ''; visible++; }
+          else { card.style.display = 'none'; }
+        });
+        animate(shownEl, currentShown, visible);
+        currentShown = visible;
+      });
+    })
+    .catch(function(err) {
+      console.error('Failed to load:', err);
+      container.innerHTML = '<p style="color:#ff416c;text-align:center;grid-column:1/-1;">REPORT AT https://discord.4games.net/</p>';
+    });
+})();
+</script>
+
+<script>
+(function () {
+  var SETTINGS_KEY = '4g_settings';
+  var textLogo = false;
+
+  function applyLogo(text) {
+    document.getElementById('logo-img').classList.toggle('logo-hidden', text);
+    document.getElementById('logo-text').classList.toggle('logo-hidden', !text);
+  }
+
+  function setUI(text) {
+    var toggle = document.getElementById('logo-toggle');
+    var label  = document.getElementById('logo-toggle-label');
+    if (!toggle) return;
+    toggle.setAttribute('aria-checked', String(text));
+    toggle.classList.toggle('on', text);
+    label.textContent = text ? 'text' : 'image';
+    label.style.color = text
+      ? 'hsl(' + (document.documentElement.style.getPropertyValue('--theme-hue') || '186') + ',70%,65%)'
+      : '';
+  }
+
+  window.logoToggle = function () {
+    textLogo = !textLogo;
+    applyLogo(textLogo);
+    setUI(textLogo);
+    var t = document.getElementById('logo-toggle');
+    if (t) { t.classList.remove('ping'); void t.offsetWidth; t.classList.add('ping'); setTimeout(function(){ t.classList.remove('ping'); }, 500); }
+    try {
+      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      s.textLogo = textLogo;
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    } catch(e) {}
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      if (saved.textLogo) { textLogo = true; applyLogo(true); }
+    } catch(e) {}
+    setUI(textLogo);
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var SETTINGS_KEY = '4g_settings';
+
+  function getHue() {
+    return document.documentElement.style.getPropertyValue('--theme-hue') || '186';
+  }
+
+  function setPlayCountUI(on) {
+    var toggle = document.getElementById('play-count-toggle');
+    var thumb  = document.getElementById('play-count-thumb');
+    var label  = document.getElementById('play-count-label');
+    if (!toggle) return;
+    var hue = getHue();
+    toggle.setAttribute('aria-checked', String(on));
+    toggle.style.background  = on ? 'hsl(' + hue + ',65%,32%)' : '';
+    toggle.style.borderColor = on ? 'hsl(' + hue + ',65%,52%)' : '';
+    toggle.style.boxShadow   = on ? '0 0 14px hsl(' + hue + ',80%,45%,0.45)' : '';
+    thumb.style.transform    = on ? 'translateY(-50%) translateX(28px)' : 'translateY(-50%)';
+    thumb.style.background   = on ? '#fff' : '#64748b';
+    thumb.style.boxShadow    = on
+      ? '0 0 8px hsl(' + hue + ',90%,70%,0.7),0 1px 4px rgba(0,0,0,0.3)'
+      : '0 1px 4px rgba(0,0,0,0.5)';
+    label.textContent = on ? 'on' : 'off';
+    label.style.color = on ? 'hsl(' + hue + ',70%,65%)' : '';
+  }
+
+  function applyPlayCounting(on) {
+    window.playCountingEnabled = on;
+    document.body.classList.toggle('no-play-counts', !on);
+    if (!on && window.sortByPlaysEnabled) {
+      window.sortByPlaysEnabled = false;
+      var sToggle = document.getElementById('sort-plays-toggle');
+      var sThumb  = document.getElementById('sort-plays-thumb');
+      var sLabel  = document.getElementById('sort-plays-label');
+      if (sToggle) {
+        sToggle.setAttribute('aria-checked', 'false');
+        sToggle.style.background  = '';
+        sToggle.style.borderColor = '';
+        sToggle.style.boxShadow   = '';
+      }
+      if (sThumb) {
+        sThumb.style.transform  = 'translateY(-50%)';
+        sThumb.style.background = '#64748b';
+        sThumb.style.boxShadow  = '0 1px 4px rgba(0,0,0,0.5)';
+      }
+      if (sLabel) { sLabel.textContent = 'off'; sLabel.style.color = ''; }
+      try {
+        var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        s.sortByPlays = false;
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+      } catch(e) {}
+      if (window.fgResortGrid) window.fgResortGrid();
+    }
+  }
+
+  window.playCountingToggle = function () {
+    var next = !window.playCountingEnabled;
+    applyPlayCounting(next);
+    setPlayCountUI(next);
+    try {
+      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      s.playCountingDisabled = !next;
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    } catch(e) {}
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      if (saved.playCountingDisabled) {
+        applyPlayCounting(false);
+        setPlayCountUI(false);
+      } else {
+        setPlayCountUI(true);
+      }
+    } catch(e) {
+      setPlayCountUI(true);
+    }
+  });
+})();
+</script>
+</body></html>
