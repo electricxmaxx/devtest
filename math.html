@@ -152,7 +152,7 @@
     .item-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
   }
 
-  img:not(.nav-icon-btn img):not(.fg-btn img):not(.site-logo):not(.card-img) { display: none !important; }
+  img:not(.nav-icon-btn img):not(.fg-btn img):not(.site-logo):not(.card-img):not(.card-fav-indicator) { display: none !important; }
 
   .card-img {
     display: block !important;
@@ -405,6 +405,22 @@
 
   .card.fav-card {
     border-color: rgba(245, 197, 24, 0.4);
+  }
+
+  .card-fav-indicator {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    display: none;
+    z-index: 10;
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.75));
+    pointer-events: none;
+  }
+  .card.fav-card .card-fav-indicator {
+    display: block;
   }
 
   .nav-icon-btn {
@@ -1230,9 +1246,7 @@ function fetchItems() {
       .then(function (snap) {
         var count = snap.exists ? (snap.data().count || 0) : 0;
         setBadge(badge, count, title);
-        // Don't resort on individual hover-loads — it reshuffles the grid
-        // mid-browse every time a count comes in. The bulk fetch on toggle
-        // already handles sorting with complete data.
+       
       })
       .catch(function () { setBadge(badge, 0, title); });
   };
@@ -2029,7 +2043,7 @@ function fetchItems() {
       var s = JSON.parse(localStorage.getItem('4g_settings') || '{}');
       if (s.sortByPlays) {
         window.sortByPlaysEnabled = true;
-        // Apply UI state immediately once DOM is ready
+       
         document.addEventListener('DOMContentLoaded', function() {
           var toggle = document.getElementById('sort-plays-toggle');
           var thumb  = document.getElementById('sort-plays-thumb');
@@ -2045,9 +2059,7 @@ function fetchItems() {
           label.textContent        = 'on';
           label.style.color        = 'hsl(' + hue + ',70%,65%)';
         });
-        // sortByPlays restore: bulk fetch runs AFTER fetchItems() populates allCards.
-        // We hook into the existing fetchItems promise chain via fgResortGrid which is
-        // set after cards are built, so we just flag that a resort+fetch is pending.
+        
         window._pendingSortByPlaysRestore = true;
       }
     } catch(e) {}
@@ -2066,13 +2078,13 @@ function fetchItems() {
         a.className = 'card';
         if (favs.includes(item.title)) a.classList.add('fav-card');
 
-        // Build image/placeholder
+ 
         function cardThumb(item) {
           if (item.image) {
             var imgUrl = /^https?:\/\//i.test(item.image) ? item.image : BASE_URL + '/' + item.image;
             return '<img class="card-img" src="' + imgUrl + '" alt="' + item.title + '" loading="lazy">';
           }
-          // Gradient placeholder based on title hash
+        
           var hash = 0;
           for (var ci = 0; ci < item.title.length; ci++) hash = ((hash << 5) - hash) + item.title.charCodeAt(ci);
           hash = Math.abs(hash);
@@ -2088,6 +2100,7 @@ function fetchItems() {
 
         a.innerHTML =
           cardThumb(item) +
+          '<img class="card-fav-indicator" src="https://ik.imagekit.io/rckdebdbt/favorite.png" alt="Favorited">' +
           '<div class="card-title-bar item-label">' +
             '<span class="card-title-text">' + item.title + '</span>' +
             '<div class="play-count-badge"></div>' +
@@ -2106,8 +2119,6 @@ function fetchItems() {
         allCards.push(a);
       });
 
-      // If sort-by-plays was saved and needs restoring, bulk fetch then resort;
-      // otherwise just do the initial alphabetical sort.
       if (window._pendingSortByPlaysRestore && window.bulkFetchPlayCounts) {
         window._pendingSortByPlaysRestore = false;
         window.bulkFetchPlayCounts(sortCards);
