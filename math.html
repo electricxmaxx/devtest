@@ -1,5 +1,159 @@
 <html lang="en"><head>
 <script>
+
+(function() {
+  var IPINFO_TOKEN = '38dd7ba1eae9e1';
+
+  
+  var CONFIGS = {
+
+   
+    DEFAULT: {
+      siteName:     '4Math Tutoring Center',
+      logoSrc:      'https://ik.imagekit.io/rckdebdbt/GAMESsdaads%20(3).png',
+      faviconHref:  'https://ik.imagekit.io/rckdebdbt/favicon.ico',
+      footerText:   '4games | discord.4games.net | press alt f4 for free games',
+      searchPlaceholder: 'Search games...',
+      showDiscord:  true,
+      showSettings: true
+    },
+
+    
+    ALT: {
+      siteName:     '7Math Tutoring Center',
+      logoSrc:      'https://ik.imagekit.io/doyourwork/GAMES%20(4).png',
+      faviconHref:  'https://ik.imagekit.io/rckdebdbt/favicon.ico',
+      footerText:   '7games | discord.4games.net | press alt f4 for free games',
+      searchPlaceholder: 'Search games...',
+      showDiscord:  true,
+      showSettings: true
+    }
+
+  };
+
+  
+  var ALT_CITIES = [
+    'Pearland|TX',
+    'Houston|TX'
+  ];
+
+  
+  function applyConfig(cfg) {
+    window.SITE_CONFIG = cfg;
+
+   
+    document.title = cfg.siteName;
+
+    
+    var fav = document.getElementById('site-favicon');
+    if (fav) fav.href = cfg.faviconHref;
+
+    
+    function applyDOM() {
+      // Logo image
+      var logoImg = document.getElementById('logo-img');
+      if (logoImg) logoImg.src = cfg.logoSrc;
+
+      // Logo text fallback
+      var logoText = document.getElementById('logo-text');
+      if (logoText) logoText.textContent = cfg.siteName;
+
+      
+      var footer = document.getElementById('site-footer-text');
+      if (footer) footer.textContent = cfg.footerText;
+
+     
+      var search = document.getElementById('searchInput');
+      if (search) search.placeholder = cfg.searchPlaceholder;
+
+      
+      if (!cfg.showDiscord) {
+        document.querySelectorAll('.nav-discord-link').forEach(function(el) {
+          el.style.display = 'none';
+        });
+      }
+
+     
+      if (!cfg.showSettings) {
+        var settingsBtn = document.getElementById('settings-open-btn');
+        if (settingsBtn) settingsBtn.style.display = 'none';
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', applyDOM);
+    } else {
+      applyDOM();
+    }
+  }
+
+  
+  applyConfig(CONFIGS.DEFAULT);
+
+  
+  var STATE_ABBR = {
+    'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA',
+    'Colorado':'CO','Connecticut':'CT','Delaware':'DE','Florida':'FL','Georgia':'GA',
+    'Hawaii':'HI','Idaho':'ID','Illinois':'IL','Indiana':'IN','Iowa':'IA','Kansas':'KS',
+    'Kentucky':'KY','Louisiana':'LA','Maine':'ME','Maryland':'MD','Massachusetts':'MA',
+    'Michigan':'MI','Minnesota':'MN','Mississippi':'MS','Missouri':'MO','Montana':'MT',
+    'Nebraska':'NE','Nevada':'NV','New Hampshire':'NH','New Jersey':'NJ','New Mexico':'NM',
+    'New York':'NY','North Carolina':'NC','North Dakota':'ND','Ohio':'OH','Oklahoma':'OK',
+    'Oregon':'OR','Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC',
+    'South Dakota':'SD','Tennessee':'TN','Texas':'TX','Utah':'UT','Vermont':'VT',
+    'Virginia':'VA','Washington':'WA','West Virginia':'WV','Wisconsin':'WI','Wyoming':'WY'
+  };
+
+ 
+  fetch('https://ipinfo.io/json?token=' + IPINFO_TOKEN)
+    .then(function(r) { return r.json(); })
+    .then(function(geo) {
+      window.GEO_INFO = geo; 
+
+      var city      = (geo.city   || '').trim();
+      var rawRegion = (geo.region || '').trim();
+      
+      var region    = STATE_ABBR[rawRegion] || rawRegion;
+      var key       = city + '|' + region;
+
+      
+      console.log('[GEO] city:', city, '| region raw:', rawRegion, '| key:', key);
+
+      if (ALT_CITIES.indexOf(key) !== -1) {
+        applyConfig(CONFIGS.ALT);
+        
+        function swapLoader() {
+          var vid = document.getElementById('fg-loading-video');
+          var txt = document.getElementById('fg-loading-text');
+          if (vid) vid.style.display = 'none';
+          if (txt) txt.style.display = 'block';
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', swapLoader);
+        } else {
+          swapLoader();
+        }
+      }
+    })
+    .catch(function(err) {
+      console.warn('[GEO] ipinfo fetch failed:', err);
+    });
+
+ 
+  document.addEventListener('keydown', function(e) {
+    if (e.altKey && (e.key === 'k' || e.key === 'K')) {
+      applyConfig(CONFIGS.DEFAULT);
+      
+      var vid = document.getElementById('fg-loading-video');
+      var txt = document.getElementById('fg-loading-text');
+      if (vid) vid.style.display = '';
+      if (txt) txt.style.display = 'none';
+      console.log('[GEO] Alt+K override — 4games branding restored');
+    }
+  });
+})();
+</script>
+<script>
 (function() {
   var sid = new URLSearchParams(window.location.search).get('sid') || '';
   if (!sid) return;
@@ -25,7 +179,7 @@
 })();
 </script>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="icon" type="image/x-icon" href="https://ik.imagekit.io/rckdebdbt/favicon.ico">
+<link id="site-favicon" rel="icon" type="image/x-icon" href="https://ik.imagekit.io/rckdebdbt/favicon.ico">
 <link rel="shortcut icon" href="https://ik.imagekit.io/rckdebdbt/favicon.ico">
 <title>4Math Tutoring Center</title>
 <meta name="description" content="4Math Tutoring Center - Interactive learning tools and resources for students.">
@@ -877,21 +1031,7 @@
   body.no-play-counts #sort-plays-label { opacity: 0.35; }
 </style>
 
-<script>
-  window.addEventListener('DOMContentLoaded', function () {
-    confirm("#nofilternovember is HERE :3");
-  });
-</script>  
-<script>
-  window.addEventListener('DOMContentLoaded', function () {
-    confirm("sub 2 4games on YOUTUBE AND TIKTOK");
-  });
-</script>
-<script>
-  window.addEventListener('DOMContentLoaded', function () {
-    confirm("Welcome to 4games v2 public version join discord.4games.net for more bypasses");
-  });
-</script>
+
 </head>
 <body>
 
@@ -949,11 +1089,11 @@ function fetchItems() {
     <img src="https://ik.imagekit.io/rckdebdbt/GAMESsdaads%20(3).png" alt="" class="site-logo" id="logo-img">
     <span id="logo-text" class="logo-hidden" style="color:#fff;font-size:1.4rem;font-weight:700;letter-spacing:0.03em;">4Math</span>
 
-    <a href="https://discord.4games.net/" class="nav-icon-btn" title="Discord Server">
-      <img src="https://ik.imagekit.io/rckdebdbt/Copy%20of%20PARTS%20DISTRIBUTION%20CENTER%20(2).png" alt="Discord">
+    <a href="https://discord.4games.net/" class="nav-icon-btn nav-discord-link" title="Discord Server">
+      <img src="https://ik.imagekit.io/doyourwork/Untitled%20design%20(34).png" alt="Discord">
     </a>
 
-    <a href="https://discord.4games.net/" class="nav-icon-btn" title="More Links">
+    <a href="https://discord.4games.net/" class="nav-icon-btn nav-discord-link" title="More Links">
       <img src="https://ik.imagekit.io/rckdebdbt/links.png" alt="Links">
     </a>
 
@@ -983,7 +1123,7 @@ function fetchItems() {
 </main>
 
 <footer>
-  <p>4games | discord.4games.net | press alt f4 for free games</p>
+  <p id="site-footer-text">4games | discord.4games.net | press alt f4 for free games</p>
 </footer>
 
 <div id="fg-viewer">
@@ -1011,6 +1151,7 @@ function fetchItems() {
     <div id="fg-loading">
       <video id="fg-loading-video" muted loop playsinline preload="none"
         data-src="https://ik.imagekit.io/rckdebdbt/copy_6732C1C5-AA00-4793-B7C6-E9EFCFEA4A5B.mp4?tr=w-1280,q-60,ac-none,f-mp4"></video>
+      <div id="fg-loading-text" style="display:none;position:absolute;top:12px;right:16px;color:#fff;font-family:monospace;font-size:13px;">loading math card...</div>
       <div class="loading-label">LOADING...</div>
     </div>
     <iframe id="fg-iframe" src="about:blank" allowfullscreen
