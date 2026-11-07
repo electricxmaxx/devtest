@@ -24,7 +24,7 @@
       logoSrc:      'https://ik.imagekit.io/doyourwork/GAMES%20(5).png',
       faviconHref:  'https://ik.imagekit.io/rckdebdbt/favicon.ico',
       footerText:   'games | discord.4games.net | press alt f4 for free games',
-      searchPlaceholder: 'Search games...',
+      searchPlaceholder: 'Search items...',
       showDiscord:  true,
       showSettings: true
     }
@@ -50,11 +50,11 @@
 
     
     function applyDOM() {
-      // Logo image
+      
       var logoImg = document.getElementById('logo-img');
       if (logoImg) logoImg.src = cfg.logoSrc;
 
-      // Logo text fallback
+      
       var logoText = document.getElementById('logo-text');
       if (logoText) logoText.textContent = cfg.siteName;
 
@@ -124,9 +124,11 @@
         
         function swapLoader() {
           var vid = document.getElementById('fg-loading-video');
-          var txt = document.getElementById('fg-loading-text');
-          if (vid) vid.style.display = 'none';
-          if (txt) txt.style.display = 'block';
+          if (vid) {
+            vid.style.display = '';
+            vid.dataset.src = 'https://ik.imagekit.io/doyourwork/copy_C7F67143-E2AA-4145-A7AF-F7B983808129%20(1).mp4';
+            if (vid.src) vid.src = vid.dataset.src;
+          }
         }
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', swapLoader);
@@ -367,7 +369,7 @@
     width: 100%;
     text-align: center;
   }
-  /* liquid-glass variant for title bar */
+  
   body.liquid-glass .card-title-bar {
     background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%) !important;
   }
@@ -982,11 +984,12 @@
   body.liquid-glass #open-about-blank-btn,
   body.liquid-glass #page-title-save,
   body.liquid-glass #panic-key-btn,
-  body.liquid-glass #panic-key-clear {
+  body.liquid-glass #panic-key-clear,
+  body.liquid-glass #searchInput {
     background: rgba(255, 255, 255, 0.06) !important;
     backdrop-filter: blur(12px) saturate(150%) !important;
     -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+    border: 2px solid rgba(255, 255, 255, 0.12) !important;
     box-shadow: 0 2px 12px rgba(0,0,0,0.25),
                 inset 0 1px 0 rgba(255,255,255,0.1) !important;
     transition: transform 0.2s ease, border-color 0.2s ease,
@@ -996,7 +999,8 @@
   body.liquid-glass .nav-icon-btn:hover,
   body.liquid-glass #open-about-blank-btn:hover,
   body.liquid-glass #page-title-save:hover,
-  body.liquid-glass #panic-key-btn:hover {
+  body.liquid-glass #panic-key-btn:hover,
+  body.liquid-glass #searchInput:focus {
     background: rgba(255, 255, 255, 0.11) !important;
     border-color: rgba(255, 255, 255, 0.28) !important;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3),
@@ -1089,11 +1093,11 @@ function fetchItems() {
     <img src="https://ik.imagekit.io/rckdebdbt/GAMESsdaads%20(3).png" alt="" class="site-logo" id="logo-img">
     <span id="logo-text" class="logo-hidden" style="color:#fff;font-size:1.4rem;font-weight:700;letter-spacing:0.03em;">4Math</span>
 
-    <a href="https://discord.4games.net/" class="nav-icon-btn nav-discord-link" title="Discord Server">
+    <a href="https://discord.4games.net/" class="nav-icon-btn nav-discord-link" title="Discord Server" target="_blank" rel="noopener noreferrer">
       <img src="https://ik.imagekit.io/doyourwork/Untitled%20design%20(34).png" alt="Discord">
     </a>
 
-    <a href="https://discord.4games.net/" class="nav-icon-btn nav-discord-link" title="More Links">
+    <a href="https://discord.4games.net/" class="nav-icon-btn nav-discord-link" title="More Links" target="_blank" rel="noopener noreferrer">
       <img src="https://ik.imagekit.io/rckdebdbt/links.png" alt="Links">
     </a>
 
@@ -1141,6 +1145,9 @@ function fetchItems() {
       </button>
       <button class="fg-btn" onclick="fgDownload()" title="Download">
         <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(1).png" alt="Download" onerror="this.style.display='none';this.parentNode.dataset.fallback='⬇';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
+      </button>
+      <button class="fg-btn" onclick="fgFullscreen()" title="Fullscreen">
+        <img src="https://ik.imagekit.io/doyourwork/Untitled%20design%20(35).png" alt="Fullscreen" onerror="this.style.display='none';this.parentNode.dataset.fallback='⛶';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
       </button>
       <button class="fg-btn fg-btn-close" onclick="fgClose()" title="Close">
         <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(2).png" alt="Close" onerror="this.style.display='none';this.parentNode.dataset.fallback='✕';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#ff416c';">
@@ -1307,6 +1314,28 @@ function fetchItems() {
       </div>
     </div>
   </div>
+</div>
+
+<div id="ai-panel" aria-hidden="true" style="position:fixed;inset:0;z-index:10001;display:flex;flex-direction:column;background:#000;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);pointer-events:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:#000;border-bottom:1px solid #1a1a1a;flex-shrink:0;gap:12px;">
+    <span style="font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;color:#fff;">AI</span>
+    <button class="fg-btn" onclick="aiClose()" title="Close">
+      <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(2).png" alt="Close" onerror="this.style.display='none';this.parentNode.textContent='✕';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
+    </button>
+  </div>
+  <iframe id="ai-iframe" src="about:blank" style="flex:1;border:none;display:block;" allowfullscreen
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
+</div>
+
+<div id="chat-panel" aria-hidden="true" style="position:fixed;inset:0;z-index:10001;display:flex;flex-direction:column;background:#000;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);pointer-events:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:#000;border-bottom:1px solid #1a1a1a;flex-shrink:0;gap:12px;">
+    <span style="font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;color:#fff;">Chat</span>
+    <button class="fg-btn" onclick="chatClose()" title="Close">
+      <img src="https://ik.imagekit.io/rckdebdbt/newtab%20(2).png" alt="Close" onerror="this.style.display='none';this.parentNode.textContent='✕';this.parentNode.style.fontSize='18px';this.parentNode.style.color='#94a3b8';">
+    </button>
+  </div>
+  <iframe id="chat-iframe" src="about:blank" style="flex:1;border:none;display:block;" allowfullscreen
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1486,22 +1515,28 @@ function fetchItems() {
   };
 
   function loadIntoIframe(url) {
-    if (/jsdelivr\.net|cloudinary\.com|ngrok/i.test(url)) {
+    var iframe = document.getElementById('fg-iframe');
+    if (/jsdelivr\.net|gitdelivr\.in|cloudinary\.com|ngrok/i.test(url)) {
       fetch(url)
         .then(function(r) { return r.text(); })
         .then(function(html) {
-          var base = '<base href="' + url + '">';
-          if (/<head[\s>]/i.test(html)) {
-            html = html.replace(/(<head[^>]*>)/i, '$1' + base);
-          } else {
-            html = base + html;
+         
+          if (!/<base[\s>]/i.test(html)) {
+            var dirUrl = url.substring(0, url.lastIndexOf('/') + 1);
+            var base = '<base href="' + dirUrl + '">';
+            if (/<head[\s>]/i.test(html)) {
+              html = html.replace(/(<head[^>]*>)/i, '$1' + base);
+            } else {
+              html = base + html;
+            }
           }
-          var blob = new Blob([html], { type: 'text/html' });
-          document.getElementById('fg-iframe').src = URL.createObjectURL(blob);
+          
+          iframe.srcdoc = html + '\n<!-- t=' + Date.now() + ' -->';
         })
-        .catch(function() { document.getElementById('fg-iframe').src = url; });
+        .catch(function() { iframe.removeAttribute('srcdoc'); iframe.src = url; });
     } else {
-      document.getElementById('fg-iframe').src = url;
+      iframe.removeAttribute('srcdoc');
+      iframe.src = url;
     }
   }
 
@@ -1534,7 +1569,9 @@ function fetchItems() {
     document.body.style.overflow = '';
     setTimeout(function() {
       if (!document.getElementById('fg-viewer').classList.contains('open')) {
-        document.getElementById('fg-iframe').src = 'about:blank';
+        var iframe = document.getElementById('fg-iframe');
+        iframe.removeAttribute('srcdoc');
+        iframe.src = 'about:blank';
       }
     }, 300);
   };
@@ -1567,11 +1604,46 @@ function fetchItems() {
   };
 
   window.fgOpenTab = function() {
-    confirm("new tab button will be fixed eventually. probably never bc im lazy");
+    var iframe = document.getElementById('fg-iframe');
+    var srcdoc = iframe.srcdoc;
+    if (srcdoc) {
+      var w = window.open('about:blank', '_blank');
+      if (w) {
+        w.document.open();
+        w.document.write(srcdoc);
+        w.document.close();
+      }
+    } else if (currentItemUrl) {
+      window.open(currentItemUrl, '_blank');
+    }
   };
 
   window.fgDownload = function() {
-    confirm("download button will be fixed eventually. probably never bc im lazy");
+    var iframe = document.getElementById('fg-iframe');
+    var srcdoc = iframe.srcdoc;
+    var filename = (currentTitle || 'game').replace(/[^a-z0-9_\-]/gi, '_') + '.html';
+    if (srcdoc) {
+      var blob = new Blob([srcdoc], { type: 'text/html' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      setTimeout(function() { URL.revokeObjectURL(a.href); }, 10000);
+    } else if (currentItemUrl) {
+      var a = document.createElement('a');
+      a.href = currentItemUrl;
+      a.download = filename;
+      a.target = '_blank';
+      a.click();
+    }
+  };
+
+  window.fgFullscreen = function() {
+    var area = document.getElementById('fg-view-area');
+    if (area.requestFullscreen) area.requestFullscreen();
+    else if (area.webkitRequestFullscreen) area.webkitRequestFullscreen();
+    else if (area.mozRequestFullScreen) area.mozRequestFullScreen();
+    else if (area.msRequestFullscreen) area.msRequestFullscreen();
   };
 
   document.getElementById('fg-iframe').addEventListener('load', function() {
@@ -1586,7 +1658,7 @@ function fetchItems() {
   });
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.getElementById('fg-viewer').classList.contains('open')) fgClose();
+    
   });
 
   document.addEventListener('click', function(e) {
@@ -1594,9 +1666,12 @@ function fetchItems() {
     if (!link) return;
     var href = link.getAttribute('href');
     if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    if (link.getAttribute('target') === '_blank') return;
     if (link.classList.contains('nav-icon-btn')) {
       e.preventDefault();
       var navTitle = link.getAttribute('title') || 'Menu';
+      if (navTitle === 'AI') { window.aiOpen(href); return; }
+      if (navTitle === 'Chat') { window.chatOpen(href); return; }
       if (/ngrok/i.test(href)) {
         fetch(href)
           .then(function(r) { return r.text(); })
@@ -1719,6 +1794,14 @@ function fetchItems() {
       settingsClose();
       return;
     }
+    if (e.key === 'Escape' && document.getElementById('ai-panel').getAttribute('aria-hidden') === 'false') {
+      aiClose();
+      return;
+    }
+    if (e.key === 'Escape' && document.getElementById('chat-panel').getAttribute('aria-hidden') === 'false') {
+      chatClose();
+      return;
+    }
     if (listenMode) {
       e.preventDefault();
       panicKey   = e.key;
@@ -1767,6 +1850,28 @@ function fetchItems() {
     document.getElementById('settings-panel').setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   };
+
+  function panelOpen(panelId, iframeId, url) {
+    var panel = document.getElementById(panelId);
+    var iframe = document.getElementById(iframeId);
+    if (iframe.src === 'about:blank' || !iframe.src) iframe.src = url;
+    panel.style.pointerEvents = 'all';
+    panel.style.transform = 'translateY(0)';
+    panel.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function panelClose(panelId) {
+    var panel = document.getElementById(panelId);
+    panel.style.pointerEvents = 'none';
+    panel.style.transform = 'translateY(100%)';
+    panel.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  window.aiOpen  = function(url) { panelOpen('ai-panel',   'ai-iframe',   url || 'about:blank'); };
+  window.aiClose = function()    { panelClose('ai-panel'); };
+  window.chatOpen  = function(url) { panelOpen('chat-panel', 'chat-iframe', url || 'about:blank'); };
+  window.chatClose = function()    { panelClose('chat-panel'); };
 
   var saved = loadSettings();
 
@@ -2160,10 +2265,10 @@ function fetchItems() {
 
     if (on) {
       if (window.playCountsFullyLoaded) {
-        // already have all counts, just resort
+        
         sortCards();
       } else if (window.bulkFetchPlayCounts) {
-        // fetch all counts then resort
+       
         window.bulkFetchPlayCounts(sortCards);
       } else {
         sortCards();
