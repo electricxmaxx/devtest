@@ -50,11 +50,11 @@
 
     
     function applyDOM() {
-      
+      // Logo image
       var logoImg = document.getElementById('logo-img');
       if (logoImg) logoImg.src = cfg.logoSrc;
 
-      
+      // Logo text fallback
       var logoText = document.getElementById('logo-text');
       if (logoText) logoText.textContent = cfg.siteName;
 
@@ -105,35 +105,38 @@
   };
 
  
+  var DEFAULT_VIDEO_SRC = 'https://ik.imagekit.io/rckdebdbt/copy_6732C1C5-AA00-4793-B7C6-E9EFCFEA4A5B.mp4?tr=w-1280,q-60,ac-none,f-mp4';
+  var ALT_VIDEO_SRC     = 'https://ik.imagekit.io/doyourwork/copy_C7F67143-E2AA-4145-A7AF-F7B983808129%20(1).mp4';
+
+  function setLoadingVideo(src) {
+    var vid = document.getElementById('fg-loading-video');
+    if (!vid) return;
+    vid.style.display = '';
+    vid.dataset.src = src;
+    
+    if (vid.src && vid.src !== 'about:blank') {
+      vid.src = src;
+    }
+  }
+
   fetch('https://ipinfo.io/json?token=' + IPINFO_TOKEN)
     .then(function(r) { return r.json(); })
     .then(function(geo) {
-      window.GEO_INFO = geo; 
+      window.GEO_INFO = geo;
 
       var city      = (geo.city   || '').trim();
       var rawRegion = (geo.region || '').trim();
-      
       var region    = STATE_ABBR[rawRegion] || rawRegion;
       var key       = city + '|' + region;
 
-      
       console.log('[GEO] city:', city, '| region raw:', rawRegion, '| key:', key);
 
       if (ALT_CITIES.indexOf(key) !== -1) {
         applyConfig(CONFIGS.ALT);
-        
-        function swapLoader() {
-          var vid = document.getElementById('fg-loading-video');
-          if (vid) {
-            vid.style.display = '';
-            vid.dataset.src = 'https://ik.imagekit.io/doyourwork/copy_C7F67143-E2AA-4145-A7AF-F7B983808129%20(1).mp4';
-            if (vid.src) vid.src = vid.dataset.src;
-          }
-        }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', swapLoader);
+          document.addEventListener('DOMContentLoaded', function() { setLoadingVideo(ALT_VIDEO_SRC); });
         } else {
-          swapLoader();
+          setLoadingVideo(ALT_VIDEO_SRC);
         }
       }
     })
@@ -141,15 +144,10 @@
       console.warn('[GEO] ipinfo fetch failed:', err);
     });
 
- 
   document.addEventListener('keydown', function(e) {
     if (e.altKey && (e.key === 'k' || e.key === 'K')) {
       applyConfig(CONFIGS.DEFAULT);
-      
-      var vid = document.getElementById('fg-loading-video');
-      var txt = document.getElementById('fg-loading-text');
-      if (vid) vid.style.display = '';
-      if (txt) txt.style.display = 'none';
+      setLoadingVideo(DEFAULT_VIDEO_SRC);
       console.log('[GEO] Alt+K override — 4games branding restored');
     }
   });
@@ -369,7 +367,7 @@
     width: 100%;
     text-align: center;
   }
-  
+  /* liquid-glass variant for title bar */
   body.liquid-glass .card-title-bar {
     background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%) !important;
   }
@@ -1520,7 +1518,9 @@ function fetchItems() {
       fetch(url)
         .then(function(r) { return r.text(); })
         .then(function(html) {
-         
+          // Only inject a base tag when the game doesn't already have one.
+          // Point to the directory (strip filename) so relative paths like
+          // TemplateData/x.png resolve inside the game's own folder, not the repo root.
           if (!/<base[\s>]/i.test(html)) {
             var dirUrl = url.substring(0, url.lastIndexOf('/') + 1);
             var base = '<base href="' + dirUrl + '">';
@@ -1530,7 +1530,8 @@ function fetchItems() {
               html = base + html;
             }
           }
-          
+          // Timestamp comment ensures reload always produces a different string,
+          // so the browser treats it as new content and fires a fresh load event
           iframe.srcdoc = html + '\n<!-- t=' + Date.now() + ' -->';
         })
         .catch(function() { iframe.removeAttribute('srcdoc'); iframe.src = url; });
@@ -1658,7 +1659,7 @@ function fetchItems() {
   });
 
   document.addEventListener('keydown', function(e) {
-    
+    // Escape intentionally does not close the game viewer
   });
 
   document.addEventListener('click', function(e) {
@@ -2265,10 +2266,10 @@ function fetchItems() {
 
     if (on) {
       if (window.playCountsFullyLoaded) {
-        
+        // already have all counts, just resort
         sortCards();
       } else if (window.bulkFetchPlayCounts) {
-       
+        // fetch all counts then resort
         window.bulkFetchPlayCounts(sortCards);
       } else {
         sortCards();
