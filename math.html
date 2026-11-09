@@ -1543,6 +1543,7 @@ function fetchItems() {
 
   window.fgOpen = function(itemUrl, title) {
     currentItemUrl = itemUrl;
+    window.currentGameUrl = itemUrl;   // keep alias in sync for injected scripts
     currentTitle   = title || 'item';
 
     if (window.trackPlay) window.trackPlay(currentTitle);
@@ -1622,20 +1623,43 @@ function fetchItems() {
   window.fgDownload = function() {
     var iframe = document.getElementById('fg-iframe');
     var srcdoc = iframe.srcdoc;
+    var resolvedUrl = currentItemUrl || window.currentGameUrl || '';
     var filename = (currentTitle || 'game').replace(/[^a-z0-9_\-]/gi, '_') + '.html';
-    if (srcdoc) {
-      var blob = new Blob([srcdoc], { type: 'text/html' });
+
+    function triggerBlob(content, mime) {
+      var blob = new Blob([content], { type: mime || 'text/html' });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = filename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       setTimeout(function() { URL.revokeObjectURL(a.href); }, 10000);
-    } else if (currentItemUrl) {
-      var a = document.createElement('a');
-      a.href = currentItemUrl;
-      a.download = filename;
-      a.target = '_blank';
-      a.click();
+    }
+
+    if (srcdoc) {
+      triggerBlob(srcdoc, 'text/html');
+    } else if (resolvedUrl) {
+      fetch(resolvedUrl)
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+          var mime = blob.type || 'text/html';
+          var ext  = mime === 'text/html' ? '.html'
+                   : mime === 'application/zip' ? '.zip'
+                   : '';
+          if (ext && !filename.endsWith(ext)) filename = filename.replace(/\.[^.]+$/, '') + ext;
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function() { URL.revokeObjectURL(a.href); }, 10000);
+        })
+        .catch(function() {
+          // fetch failed (e.g. CORS) — fall back to opening the URL directly
+          window.open(resolvedUrl, '_blank');
+        });
     }
   };
 
